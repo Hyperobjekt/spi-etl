@@ -11,7 +11,6 @@ while getopts 'dtr:h' opt; do
   case "$opt" in
     d)
       DEPLOY=1
-      BUILD_TILESETS=1
       ;;
 
     t)
@@ -52,15 +51,19 @@ for REGION in ${REGIONS[@]}; do
       csvsort -c 1 --no-inference > ./_proc/$REGION.wide.csv
   fi
   node ./scripts/extract-extents.mjs ./_proc/$REGION.wide.csv ./_proc/$REGION.extents.csv
-  if [ $DEPLOY = 1 ]; then
+  if [ $DEPLOY = 1 ] && [ $BUILD_TILESETS = 1 ]; then
     echo "uploading static data to S3"
     aws s3 cp ./_proc/$REGION.extents.csv s3://$SPI_DATA_BUCKET/$SPI_DATA_VERSION/output/$REGION-extents.csv
     aws s3 cp ./_proc/$REGION.wide.csv s3://$SPI_DATA_BUCKET/$SPI_DATA_VERSION/output/$REGION-full.csv
     ./scripts/$REGION-tilesets.sh ./_proc/$REGION.wide.csv ./_proc/$REGION
-  elif [ $BUILD_TILESETS = 1 ]; then
+  elif [ $DEPLOY = 0 ] && [ $BUILD_TILESETS = 1 ]; then
     ./scripts/$REGION-tilesets.sh ./_proc/$REGION.wide.csv
+  elif [ $DEPLOY = 1 ] && [ $BUILD_TILESETS = 0 ]; then
+    echo "uploading static data to S3"
+    aws s3 cp ./_proc/$REGION.extents.csv s3://$SPI_DATA_BUCKET/$SPI_DATA_VERSION/output/$REGION-extents.csv
+    aws s3 cp ./_proc/$REGION.wide.csv s3://$SPI_DATA_BUCKET/$SPI_DATA_VERSION/output/$REGION-full.csv
   else
-    echo "skipping tileset build and deploy.  use -t to build tilesets or -d to build and deploy"
+    echo "skipping tileset build and deploy.  use -t to build tilesets and -d to deploy"
   fi
   echo "done!"
 done
