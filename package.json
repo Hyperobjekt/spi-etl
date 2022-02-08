@@ -1,0 +1,25 @@
+{
+  "name": "spi-etl",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hyperobjekt/spi-etl.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hyperobjekt/spi-etl/issues"
+  },
+  "homepage": "https://github.com/Hyperobjekt/spi-etl#readme",
+  "devDependencies": {
+    "d3-dsv": "^3.0.1"
+  },
+  "dependencies": {
+    "d3-array": "^3.1.1"
+  }
+}
