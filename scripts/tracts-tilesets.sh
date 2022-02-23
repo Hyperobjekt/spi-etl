@@ -20,7 +20,7 @@ fi
 
 mkdir -p _proc
 echo "Downloading 2010 Census Tracts GeoJSON..."
-aws s3 cp s3://$SPI_TILESET_BUCKET/tracts.geojson.gz ./_proc
+aws s3 cp s3://$SPI_GEOJSON_BUCKET/tracts.geojson.gz ./_proc
 gzip -d ./_proc/tracts.geojson.gz
 echo "Joining CSV file with GeoJSON..."
 tippecanoe-json-tool --extract=GEOID \
@@ -40,4 +40,9 @@ if [ -z "$2" ]
   then
     exit 0
 fi
-aws s3 cp $2 s3://$SPI_TILESET_BUCKET/$SPI_DATA_VERSION/tracts/ --recursive
+aws s3 cp $2 s3://$SPI_TILESET_BUCKET/$SPI_DATA_VERSION/tracts/ --recursive \
+    --content-type application/x-protobuf \
+    --content-encoding gzip \
+    --exclude "*.json"
+aws s3 cp $2/metadata.json s3://$SPI_TILESET_BUCKET/$SPI_DATA_VERSION/tracts/metadata.json \
+    --content-type application/json
