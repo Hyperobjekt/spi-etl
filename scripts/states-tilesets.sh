@@ -26,6 +26,7 @@ echo "Joining CSV file with GeoJSON..."
 echo "Creating choropleth GeoJSON..."
 mapshaper ./_proc/states.geojson \
   -filter-fields GEOID,STATE,NAME \
+  -each "id = Number(GEOID)" \
   -join $1 keys=GEOID,GEOID string-fields=GEOID \
   -rename-fields state=STATE,name=NAME \
   -o - format=geojson | \
@@ -43,12 +44,13 @@ tippecanoe $TILESET_OUTPUT -f \
   -l states ./_proc/states.data.json \
   --read-parallel --maximum-zoom=10 --minimum-zoom=1 \
   --extend-zooms-if-still-dropping --attribute-type=GEOID:string \
-  --generate-ids \
+  --use-attribute-for-id=id \
   --empty-csv-columns-are-null --coalesce-densest-as-needed \
   --simplification=10 --simplify-only-low-zooms --detect-shared-borders
 echo "Tiles generation complete."
 if [ -z "$2" ]
   then
+    echo "skipping deploy to s3://$SPI_TILESET_BUCKET/$SPI_DATA_VERSION/states/"
     exit 0
 fi
 

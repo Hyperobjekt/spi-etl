@@ -25,7 +25,8 @@ gzip -d ./_proc/cities.geojson.gz
 
 echo "Creating city center points GeoJSON..."
 mapshaper ./_proc/cities.geojson \
-  -filter-fields GEOID,STATE,NAME \
+  -filter-fields GEOID,STATE,NAME,CENSUSAREA \
+  -each "id = Number(GEOID)" \
   -join $1 keys=GEOID,GEOID string-fields=GEOID \
   -filter 'Boolean(this.properties.bhn)' \
   -rename-fields state=STATE,name=NAME \
@@ -38,6 +39,7 @@ mapshaper ./_proc/cities.geojson \
 echo "Creating choropleth GeoJSON..."
 mapshaper ./_proc/cities.geojson \
   -filter-fields GEOID,STATE,NAME \
+  -each "id = Number(GEOID)" \
   -join $1 keys=GEOID,GEOID string-fields=GEOID \
   -filter 'Boolean(this.properties.bhn)' \
   -rename-fields state=STATE,name=NAME \
@@ -50,14 +52,15 @@ echo "Generating tilesets..."
 tippecanoe $TILESET_OUTPUT -f \
   -L cities:./_proc/cities.data.json \
   -L cities-centers:./_proc/cities.centers.geojson \
-  --read-parallel --maximum-zoom=10 --minimum-zoom=2 \
+  --read-parallel --maximum-zoom=10 --minimum-zoom=2 --base-zoom=2 \
   --extend-zooms-if-still-dropping --attribute-type=GEOID:string \
-  --generate-ids \
-  --empty-csv-columns-are-null --coalesce-densest-as-needed \
+  --use-attribute-for-id=id \
+  --empty-csv-columns-are-null \
   --simplification=10 --simplify-only-low-zooms --detect-shared-borders
 echo "Tiles generation complete."
 if [ -z "$2" ]
   then
+    echo "skipping deploy to s3://$SPI_TILESET_BUCKET/$SPI_DATA_VERSION/cities/"
     exit 0
 fi
 aws s3 cp $2 s3://$SPI_TILESET_BUCKET/$SPI_DATA_VERSION/cities/ --recursive \

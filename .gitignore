@@ -4,3 +4,4 @@ node_modules
 source
 *.mbtiles
 *.csv
+!src/*.csv
