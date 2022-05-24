@@ -6,6 +6,8 @@
 - tippecanoe
 - nodejs
 - csvkit
+- mapshaper
+- gettext
 
 > TODO: create a docker container with the above requirements installed
 
